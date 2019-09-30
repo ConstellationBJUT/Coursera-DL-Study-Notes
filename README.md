@@ -1,6 +1,7 @@
 # Coursera-DL-Study-Notes
 从0学习深度学习课程，跟随Andrew Ng的Coursera课程，课后根据记忆用python代码实现课程作业。  
 目的：练习python代码编写  
+博客地址：https://blog.csdn.net/bjjoy2009/article/category/9363340  
 学习计划：  
 （1）看视频课程  
 （2）看课程提供的代码，学习代码风格和逻辑  
