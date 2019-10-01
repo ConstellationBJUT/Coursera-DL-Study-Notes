@@ -1,7 +1,8 @@
 """
 @Time : 2019/9/26 20:29 PM
 @Author : bjjoy2009
-深层神经网络实现，使用week3实验数据进行对比，hidden layer采用不同的激活函数
+深层神经网络实现，hidden layer采用不同的激活函数，使用week3实验数据进行对比
+该与课件程序差别较大，
 """
 from utils import *
 
@@ -50,7 +51,9 @@ class DNN:
         return parameters
 
     def forward_propagation(self, parameters, X):
+        # 输入层初始化A0
         cache = {'A0': self.X}
+        # hidden layer前向传播计算
         A_pre = X
         for l in range(1, self.L-1):
             Wl = parameters['W' + str(l)]
@@ -64,6 +67,7 @@ class DNN:
             cache['A' + str(l)] = Al
             cache['Z' + str(l)] = Zl
 
+        # 输出层计算
         Wl = parameters['W' + str(self.L-1)]
         bl = parameters['b' + str(self.L-1)]
         Zl = np.dot(Wl, A_pre) + bl
@@ -75,7 +79,7 @@ class DNN:
 
     def back_propagation(self, parameters, cache):
         grads = {}
-        # 输出层反向传播（L-1层）
+        # 输出层（L-1层）反向传播
         L = self.L - 1
         Al = cache['A' + str(L)]
         Zl = cache['Z' + str(L)]
@@ -105,6 +109,10 @@ class DNN:
         return parameters
 
     def fit(self):
+        """
+        模型训练
+        :return: 参数W和b
+        """
         parameters = self.init_parameters()
         for i in range(self.max_iter):
             cache, al = self.forward_propagation(parameters, self.X)
@@ -116,6 +124,11 @@ class DNN:
         self.parameters = parameters
 
     def predict(self, X):
+        """
+        预测函数
+        :param X:
+        :return: 包含0，1的list
+        """
         cache, a2 = self.forward_propagation(self.parameters, X)
         predicts = (a2 > 0.5)
         return predicts
@@ -123,9 +136,9 @@ class DNN:
 
 np.random.seed(1)
 X, Y = load_planar_dataset()
-nn = DNN(X=X, Y=Y, layer_dims=[2, 8, 4, 1], max_iter=100000, alpha=0.01, print_loss=True, activation='relu')
+nn = DNN(X=X, Y=Y, layer_dims=[2, 4, 1], max_iter=10000, alpha=1.2, print_loss=True, activation='tanh')
 nn.fit()
 predicts = nn.predict(X)
 accuracy = float((np.dot(Y, predicts.T) + np.dot(1-Y, 1-predicts.T))/float(Y.size)*100)
 print('Accuracy: %f ' % accuracy+ '%')
-plot_decision_boundary(lambda x: nn.predict(x.T), X, Y, 'relu[2881]='+ str(accuracy)+ '%')
+plot_decision_boundary(lambda x: nn.predict(x.T), X, Y, 'relu[2881]=' + str(accuracy) + '%')
