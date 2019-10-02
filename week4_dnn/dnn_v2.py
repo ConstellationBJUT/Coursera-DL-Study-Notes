@@ -5,6 +5,7 @@
 """
 import numpy as np
 
+
 def sigmoid(Z):
     A = 1/(1 + np.exp(-Z))
     return A
@@ -46,7 +47,7 @@ class DNN:
         """
         :param X: 训练集
         :param Y: labels
-        :param layer_dims: 各个层节点数list，layer_dims[0]训练集特征数，layer_dims[L]=1输出层节点数
+        :param layer_dims: 各个层节点数list，layer_dims[0]训练集特征数，layer_dims[L]输出层节点数
         :param alpha: 梯度下降学习率
         """
         self.X = X
@@ -55,26 +56,35 @@ class DNN:
         self.max_iter = max_iter
         self.alpha = alpha
         self.m = self.X.shape[1]
-        self.L = len(layer_dims) - 1
+        self.L = len(layer_dims) - 1  # 网络层数，不计算输入层
         self.print_loss = print_loss
         self.parameters = {}
         self.activation = activation
 
     def init_parameters(self):
+        """
+        初始化1~L层参数
+        :return:
+        """
+        np.random.seed(1)
         parameters = {}
         for l in range(1, self.L + 1):
-            Wl = np.random.random((self.layer_dims[l], self.layer_dims[l-1])) * 0.01
+            # 比直接*0.01效果好
+            Wl = np.random.randn(self.layer_dims[l], self.layer_dims[l-1])/np.sqrt(self.layer_dims[l-1])  # * 0.01
             bl = np.zeros((self.layer_dims[l], 1))
             parameters['W' + str(l)] = Wl
             parameters['b' + str(l)] = bl
         return parameters
 
-    def linear_forward(self, A, W, b):
+    def linear_forward(self, A_pre, W, b):
         """
-        第l层计算，Z = WA+b
+        计算l层Z=WX+b
+        :param A_pre: l-1层A
+        :param W: l层W
+        :param b: l层b
         :return:
         """
-        Z = np.dot(W, A) + b
+        Z = np.dot(W, A_pre) + b
         return Z
 
     def linear_activation_forward(self, Z, activation):
@@ -95,19 +105,19 @@ class DNN:
         前向传播
         :param parameters: 参数字典Wl，bl
         :param X: 特征数据
-        :return:
+        :return:caches 缓存字典A0~AL和Z1~ZL，AL
         """
         caches = {'A0': X}
         Al = X  # 输入层
         # hidden layer 前项传播
         for l in range(1, self.L):
-            Zl = self.linear_forward(A=Al, W=parameters['W' + str(l)], b=parameters['b'+str(l)])
+            Zl = self.linear_forward(A_pre=Al, W=parameters['W' + str(l)], b=parameters['b'+str(l)])
             Al = self.linear_activation_forward(Zl, activation=self.activation)
             caches['A' + str(l)] = Al
             caches['Z' + str(l)] = Zl
 
         # 输出层计算
-        Zl = self.linear_forward(A=Al, W=parameters['W' + str(self.L)], b=parameters['b'+str(self.L)])
+        Zl = self.linear_forward(A_pre=Al, W=parameters['W' + str(self.L)], b=parameters['b'+str(self.L)])
         Al = self.linear_activation_forward(Zl, activation='sigmoid')
         caches['A' + str(self.L)] = Al
         caches['Z' + str(self.L)] = Zl
@@ -144,10 +154,10 @@ class DNN:
 
     def linear_activation_backward(self, dA, Z, A, A_pre, W, activation):
         """
-        计算l层dZ
+        计算l层dZ,dW,db和l-1层dA_pre
         :param dA: l层dA
         :param Z: l层Z
-        :param A: l层A 用于计算激活函数的倒数，减少计算σ(Z)
+        :param A: l层A 用于计算激活函数的导数，减少计算σ(Z)
         :param A_pre: l-1层A，用于求dW
         :return: l-1层dA_pre,l层dW,l层db
         """
@@ -168,11 +178,12 @@ class DNN:
         :return: grads
         """
         grads = {}
-        # 1.计算输出层
-        L = self.L  # 输出层所在层数编号（例如4层网络，输出层l=3）
+        # 1.计算输出层和上一层的dA_pre
+        L = self.L  # 输出层所在层数编号
         AL = caches['A' + str(L)]
         ZL = caches['Z' + str(L)]
-        dAl = - (np.divide(Y, AL) - np.divide(1 - Y, 1 - AL))
+        # 交叉熵损失函数求dl/dAl
+        dAl = - (np.divide(self.Y, AL) - np.divide(1 - self.Y, 1 - AL))
         A_pre = caches['A' + str(L - 1)]
         grads['dA' + str(L-1)], grads['dW' + str(L)], grads['db' + str(L)] = self.linear_activation_backward(dAl, ZL, AL, A_pre, parameters['W' + str(L)], 'sigmoid')
         # 2.计算hidden layer
@@ -199,7 +210,7 @@ class DNN:
         parameters = self.init_parameters()
         for i in range(self.max_iter):
             caches, al = self.forward_propagation(parameters, self.X)
-            if self.print_loss and i % 1000 == 0:
+            if self.print_loss and i % 100 == 0:
                 loss = self.compute_cost(self.Y, al)
                 print(i, loss)
             grads = self.back_propagation(parameters, caches)
@@ -212,9 +223,14 @@ class DNN:
         :param X:
         :return: 包含0，1的list
         """
-        cache, a2 = self.forward_propagation(self.parameters, X)
-        predicts = (a2 > 0.5)
+        cache, al = self.forward_propagation(self.parameters, X)
+        predicts = (al > 0.5)
         return predicts
+
+    def score(self, X, Y):
+        predicts = self.predict(X)
+        accuracy = float((np.dot(Y, predicts.T) + np.dot(1-Y, 1-predicts.T))/float(Y.size))
+        return accuracy
 
 
 # test
@@ -222,7 +238,7 @@ if __name__ == '__main__':
     from utils import load_planar_dataset, plot_decision_boundary
     np.random.seed(1)
     X, Y = load_planar_dataset()
-    nn = DNN(X=X, Y=Y, layer_dims=[2, 4, 1], max_iter=10000, alpha=1.2, print_loss=True, activation='tanh')
+    nn = DNN(X=X, Y=Y, layer_dims=[2, 4, 4, 1], max_iter=10000, alpha=1.2, print_loss=True, activation='tanh')
     nn.fit()
     predicts = nn.predict(X)
     accuracy = float((np.dot(Y, predicts.T) + np.dot(1-Y, 1-predicts.T))/float(Y.size)*100)

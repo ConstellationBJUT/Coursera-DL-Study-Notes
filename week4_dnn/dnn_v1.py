@@ -44,7 +44,7 @@ class DNN:
     def init_parameters(self):
         parameters = {}
         for l in range(1, self.L):
-            Wl = np.random.random((self.layer_dims[l], self.layer_dims[l-1])) * 0.01
+            Wl = np.random.randn(self.layer_dims[l], self.layer_dims[l-1]) * 0.01
             bl = np.zeros((self.layer_dims[l], 1))
             parameters['W' + str(l)] = Wl
             parameters['b' + str(l)] = bl
