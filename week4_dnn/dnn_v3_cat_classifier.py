@@ -28,13 +28,15 @@ def load_data():
     return train_set_x_orig, train_set_y_orig, test_set_x_orig, test_set_y_orig, classes
 
 
-def is_cat(my_image, nn, num_px, classes):
+def is_cat(my_image, nn, num_px, classes, is_show=False):
     image = Image.open(my_image)
     x = np.array(image.resize((num_px, num_px)))
     x = x.reshape(num_px*num_px*3, -1)
     x = x/255
     my_predicted_image = nn.score(x, np.array([1]))
     print("y = " + str(np.squeeze(my_predicted_image)) + ', your L-layer model predicts a \"' + classes[int(np.squeeze(my_predicted_image)),].decode("utf-8") +  "\" picture.")
+    if is_show:
+        image.show()
 
 
 if __name__ == '__main__':
@@ -53,4 +55,4 @@ if __name__ == '__main__':
     print('train:', accuracy)
     print('test:', nn.score(test_x, test_y))
 
-    is_cat('images/my_image.jpg', nn, 64, classes)
+    is_cat('images/my_image.jpg', nn, 64, classes, is_show=True)
