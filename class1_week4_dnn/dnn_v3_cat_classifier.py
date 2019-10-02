@@ -8,7 +8,7 @@ import h5py
 import numpy as np
 from PIL import Image
 
-from week4_dnn.dnn_v2 import DNN
+from class1_week4_dnn.dnn_v2 import DNN
 
 
 def load_data():
