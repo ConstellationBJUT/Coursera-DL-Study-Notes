@@ -138,7 +138,7 @@ class DNN:
         cost -- cross-entropy cost
         """
 
-        cost = (-1./self.m) * np.sum(np.multiply(Y, np.log(AL)) + np.multiply((1-Y), np.log(1-AL)))
+        cost = (-1./self.m) * np.sum(np.multiply(Y, np.log(np.clip(AL, 1e-7, 1))) + np.multiply((1-Y), np.log(np.clip(1-AL, 1e-7, 1))))
         cost = np.squeeze(cost)
         return cost
 
@@ -358,7 +358,7 @@ class DNN:
         AL = caches['A' + str(L)]
         ZL = caches['Z' + str(L)]
         # 交叉熵损失函数求dl/dAl
-        dAl = - (np.divide(self.Y, AL) - np.divide(1 - self.Y, 1 - AL))
+        dAl = - (np.divide(self.Y, np.clip(AL, 1e-7, 1)) - np.divide(1 - self.Y, np.clip(1 - AL, 1e-7, 1)))
         A_pre = caches['A' + str(L - 1)]
         grads['dA' + str(L-1)], grads['dW' + str(L)], grads['db' + str(L)] = self.linear_activation_backward(dAl, ZL, AL, A_pre, parameters['W' + str(L)], 'sigmoid')
         # 2.计算hidden layer
