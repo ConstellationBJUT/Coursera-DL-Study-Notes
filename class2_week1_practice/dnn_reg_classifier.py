@@ -26,12 +26,15 @@ if __name__ == '__main__':
     train_X, train_Y, test_X, test_Y = load_2D_dataset()
 
     layer_dims = [train_X.shape[0], 20, 3, 1]
-    dnn = DNN(X=train_X, Y=train_Y, layer_dims=layer_dims, max_iter=30000, alpha=0.3,
-              print_loss=True, print_loss_iter=10000, lambd=0.7, keep_prob=0.86)
-    dnn.fit()
+    dnn = DNN(X=train_X, Y=train_Y, layer_dims=layer_dims, max_iter=3546, alpha=0.3,
+              print_loss=True, print_loss_iter=1000, lambd=0.7, keep_prob=0.86)
+    # dnn.fit()
+    # dnn.fit_regularization()
+    dnn.fit_dropout()
     accuracy = dnn.score(train_X, train_Y)
     print('train:', accuracy)
+    print('test', dnn.score(test_X, test_Y))
     axes = plt.gca()
     axes.set_xlim([-0.75, 0.40])
     axes.set_ylim([-0.75, 0.65])
-    plot_decision_boundary(lambda x: dnn.predict(x.T), train_X, train_Y, 'Model without regularization ' + str(accuracy))
+    plot_decision_boundary(lambda x: dnn.predict(x.T), train_X, train_Y, 'Model dropout ')
