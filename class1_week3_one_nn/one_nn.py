@@ -11,8 +11,8 @@ def sigmoid(z):
 
 
 def sigmoid_loss(y, al):
-    result = -1/len(y) * (np.dot(y, np.log(al).T) + np.dot(1-y, np.log(1-al).T))
-    return result
+    result = -1/y.shape[1] * (np.dot(y, np.log(al).T) + np.dot(1-y, np.log(1-al).T))
+    return np.squeeze(result)
 
 
 class OneNN:
@@ -137,9 +137,9 @@ class OneNN:
 
 np.random.seed(1)
 X, Y = load_planar_dataset()
-nn = OneNN(X=X, Y=Y, print_loss=False)
+nn = OneNN(X=X, Y=Y, print_loss=True)
 nn.fit()
 predicts = nn.predict(X)
 print('Accuracy: %f ' % float((np.dot(Y, predicts.T) + np.dot(1-Y, 1-predicts.T))/float(Y.size)*100) + '%')
-plot_decision_boundary(lambda x: nn.predict(x.T), X, Y)
+plot_decision_boundary(lambda x: nn.predict(x.T), X, Y, 'one_nn')
 

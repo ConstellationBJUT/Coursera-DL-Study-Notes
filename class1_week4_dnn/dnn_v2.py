@@ -1,7 +1,7 @@
 """
-@Time : 2019/9/30 20:48 PM
+@Time : 2019/10/03 20:48 PM
 @Author : bjjoy2009
-模仿课件将程序模块化，采用课件用的数据进行程序实现
+dnn实现
 """
 import numpy as np
 
@@ -35,11 +35,6 @@ def relu_backward(dA, Z):
 def tanh_backward(A):
     dZ = 1 - np.power(A, 2)
     return dZ
-
-
-def sigmoid_loss(y, al):
-    result = -1/len(y) * (np.dot(y, np.log(al).T) + np.dot(1-y, np.log(1-al).T))
-    return result
 
 
 class DNN:

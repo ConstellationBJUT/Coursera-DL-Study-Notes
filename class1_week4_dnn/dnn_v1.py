@@ -18,8 +18,8 @@ def relu(Z):
 
 
 def sigmoid_loss(y, al):
-    result = -1/len(y) * (np.dot(y, np.log(al).T) + np.dot(1-y, np.log(1-al).T))
-    return result
+    result = -1/y.shape[1] * (np.dot(y, np.log(al).T) + np.dot(1-y, np.log(1-al).T))
+    return np.squeeze(result)
 
 
 class DNN:
@@ -136,7 +136,7 @@ class DNN:
 
 np.random.seed(1)
 X, Y = load_planar_dataset()
-nn = DNN(X=X, Y=Y, layer_dims=[2, 4, 1], max_iter=10000, alpha=1.2, print_loss=True, activation='tanh')
+nn = DNN(X=X, Y=Y, layer_dims=[2, 4, 4, 1], max_iter=20000, alpha=0.1, print_loss=True, activation='relu')
 nn.fit()
 predicts = nn.predict(X)
 accuracy = float((np.dot(Y, predicts.T) + np.dot(1-Y, 1-predicts.T))/float(Y.size)*100)
