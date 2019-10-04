@@ -1,6 +1,7 @@
 """
 @Time : 2019/10/2 20:19 PM
 @Author : bjjoy2009
+深层神经网络，用于创建和训练网络
 """
 
 import numpy as np
@@ -39,7 +40,7 @@ def tanh_backward(A):
 
 class DNN:
     def __init__(self, X, Y, layer_dims, max_iter=10000, alpha=0.05, print_loss=False, print_loss_iter=100,
-                 activation='relu', lambd=0, keep_prob=1):
+                 activation='relu', lambd=0, keep_prob=1, initialization="he"):
         """
         :param X: 训练集
         :param Y: labels
@@ -50,6 +51,7 @@ class DNN:
         :param activation: hidden layer激活函数
         :param lambd: L2正则化参数
         :param keep_prob: dropout保留节点的比例
+        :param initialization: 权重初始化方式
         """
         self.X = X
         self.Y = Y
@@ -63,6 +65,7 @@ class DNN:
         self.activation = activation
         self.lambd = lambd
         self.keep_prob = keep_prob
+        self.initialization = initialization
         self.parameters = {}
 
     def init_parameters(self):
@@ -74,7 +77,14 @@ class DNN:
         parameters = {}
         for l in range(1, self.L + 1):
             # 比直接*0.01效果好
-            Wl = np.random.randn(self.layer_dims[l], self.layer_dims[l-1])/np.sqrt(self.layer_dims[l-1])  # * 0.01
+            if self.initialization == 'zeros':
+                Wl = np.zeros((self.layer_dims[l], self.layer_dims[l-1]))
+            elif self.initialization == 'random':
+                Wl = np.random.randn(self.layer_dims[l], self.layer_dims[l-1]) * 10
+            elif self.initialization == 'he':
+                Wl = np.random.randn(self.layer_dims[l], self.layer_dims[l-1]) * (np.sqrt(2. / self.layer_dims[l-1]))
+            else:
+                Wl = np.random.randn(self.layer_dims[l], self.layer_dims[l-1])/np.sqrt(self.layer_dims[l-1])
             bl = np.zeros((self.layer_dims[l], 1))
             parameters['W' + str(l)] = Wl
             parameters['b' + str(l)] = bl
@@ -138,7 +148,8 @@ class DNN:
         cost -- cross-entropy cost
         """
 
-        cost = (-1./self.m) * np.sum(np.multiply(Y, np.log(np.clip(AL, 1e-7, 1))) + np.multiply((1-Y), np.log(np.clip(1-AL, 1e-7, 1))))
+        # cost = (-1./self.m) * np.sum(np.multiply(Y, np.log(np.clip(AL, 1e-6, 1))) + np.multiply((1-Y), np.log(np.clip(1-AL, 1e-6, 1))))
+        cost = (-1./self.m) * np.nansum(np.multiply(Y, np.log(AL)) + np.multiply((1-Y), np.log(1-AL)))
         cost = np.squeeze(cost)
         return cost
 
@@ -166,10 +177,12 @@ class DNN:
         """
         if activation == 'relu':
             dZ = relu_backward(dA, Z)
+            # dZ = np.multiply(dA, np.int64(A > 0))
         elif activation == 'tanh':
             dZ = dA * tanh_backward(A)
         elif activation == 'sigmoid':
-            dZ = dA * sigmoid_backward(A)
+            # dZ = dA * sigmoid_backward(A)  # 在sigmoid可用在hidden layer
+            dZ = A - self.Y  # 在sigmoid只用在输出层做二分类，此时A是AL
         dA_pre, dW, db = self.linear_backward(dZ, A_pre, W)
         return dA_pre, dW, db
 
@@ -186,6 +199,7 @@ class DNN:
         AL = caches['A' + str(L)]
         ZL = caches['Z' + str(L)]
         # 交叉熵损失函数求dl/dAl
+        # dAl = - (np.divide(self.Y, np.clip(AL, 1e-6, 1)) - np.divide(1 - self.Y, np.clip(1 - AL, 1e-6, 1)))
         dAl = - (np.divide(self.Y, AL) - np.divide(1 - self.Y, 1 - AL))
         A_pre = caches['A' + str(L - 1)]
         grads['dA' + str(L-1)], grads['dW' + str(L)], grads['db' + str(L)] = self.linear_activation_backward(dAl, ZL, AL, A_pre, parameters['W' + str(L)], 'sigmoid')
@@ -358,7 +372,8 @@ class DNN:
         AL = caches['A' + str(L)]
         ZL = caches['Z' + str(L)]
         # 交叉熵损失函数求dl/dAl
-        dAl = - (np.divide(self.Y, np.clip(AL, 1e-7, 1)) - np.divide(1 - self.Y, np.clip(1 - AL, 1e-7, 1)))
+        # dAl = - (np.divide(self.Y, np.clip(AL, 1e-7, 1)) - np.divide(1 - self.Y, np.clip(1 - AL, 1e-7, 1)))
+        dAl = - (np.divide(self.Y, AL) - np.divide(1 - self.Y, 1 - AL))
         A_pre = caches['A' + str(L - 1)]
         grads['dA' + str(L-1)], grads['dW' + str(L)], grads['db' + str(L)] = self.linear_activation_backward(dAl, ZL, AL, A_pre, parameters['W' + str(L)], 'sigmoid')
         # 2.计算hidden layer

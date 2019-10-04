@@ -7,7 +7,7 @@ dnn正则化二分类实验
 import scipy.io
 import matplotlib.pyplot as plt
 
-from class2_week1_practice.dnn_reg import DNN
+from class2_week1_practice.dnn import DNN
 from utils import plot_decision_boundary
 
 
