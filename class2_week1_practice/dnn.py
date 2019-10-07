@@ -76,7 +76,6 @@ class DNN:
         np.random.seed(3)
         parameters = {}
         for l in range(1, self.L + 1):
-            # 比直接*0.01效果好
             if self.initialization == 'zeros':
                 Wl = np.zeros((self.layer_dims[l], self.layer_dims[l-1]))
             elif self.initialization == 'random':
@@ -85,7 +84,8 @@ class DNN:
                 Wl = np.random.randn(self.layer_dims[l], self.layer_dims[l-1]) * (np.sqrt(2. / self.layer_dims[l-1]))
             else:
                 Wl = np.random.randn(self.layer_dims[l], self.layer_dims[l-1])/np.sqrt(self.layer_dims[l-1])
-            bl = np.zeros((self.layer_dims[l], 1))
+            # bl = np.zeros((self.layer_dims[l], 1))
+            bl = np.random.randn(self.layer_dims[l], 1)
             parameters['W' + str(l)] = Wl
             parameters['b' + str(l)] = bl
         return parameters
@@ -161,8 +161,8 @@ class DNN:
         :param W: l层W
         :return: l-1层dA_pre,l层dW,l层db
         """
-        dW = 1/self.m * np.dot(dZ, A_pre.T)
-        db = 1/self.m * np.sum(dZ, axis=1, keepdims=True)
+        dW = 1./self.m * np.dot(dZ, A_pre.T)
+        db = 1./self.m * np.sum(dZ, axis=1, keepdims=True)
         dA_pre = np.dot(W.T, dZ)
         return dA_pre, dW, db
 
