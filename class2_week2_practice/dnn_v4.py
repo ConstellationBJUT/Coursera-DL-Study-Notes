@@ -290,7 +290,6 @@ class DNN:
         elif self.optimizer == "adam":
             v, s = op.initialize_adam(parameters)
 
-
         for i in range(self.epochs):
             # 每个batch进行梯度下降
             seed += 1
@@ -364,7 +363,7 @@ class DNN:
         dA_pre, dW, db = self.linear_backward_with_regularization(dZ, A_pre, W)
         return dA_pre, dW, db
 
-    def back_propagation_with_regularization(self, parameters, caches):
+    def back_propagation_with_regularization(self, parameters, caches, Y_batch):
         """
         反向传播regularization
         :param parameters: 各层W，b
@@ -377,7 +376,7 @@ class DNN:
         AL = caches['A' + str(L)]
         ZL = caches['Z' + str(L)]
         # 交叉熵损失函数求dl/dAl
-        dAl = - (np.divide(self.Y, AL) - np.divide(1 - self.Y, 1 - AL))
+        dAl = - (np.divide(Y_batch, AL) - np.divide(1 - Y_batch, 1 - AL))
         A_pre = caches['A' + str(L - 1)]
         grads['dA' + str(L-1)], grads['dW' + str(L)], grads['db' + str(L)] = self.linear_activation_backward_with_regularization(dAl, ZL, AL, A_pre, parameters['W' + str(L)], 'sigmoid')
         # 2.计算hidden layer
@@ -395,6 +394,8 @@ class DNN:
         模型训练
         :return: 参数W和b
         """
+        seed = 10
+        t = 0
         parameters = self.init_parameters()
         # Initialize the optimizer
         if self.optimizer == "gd":
@@ -405,21 +406,21 @@ class DNN:
             v, s = op.initialize_adam(parameters)
 
         for i in range(self.epochs):
-            caches, al = self.forward_propagation(parameters, self.X)
+            for X_batch, Y_batch in self.get_batch(seed):
+                caches, al = self.forward_propagation(parameters, X_batch)
+                cost = self.compute_cost_with_regularization(Y_batch, al, parameters, self.lambd)
+                grads = self.back_propagation_with_regularization(parameters, caches, Y_batch)
+
+                # Update parameters
+                if self.optimizer == "gd":
+                    parameters = op.gd(parameters, grads, self.alpha)
+                elif self.optimizer == "momentum":
+                    parameters, v = op.momentum(parameters, grads, v, self.alpha, self.beta1)
+                elif self.optimizer == "adam":
+                    t = t + 1  # Adam counter
+                    parameters, v, s = op.adam(parameters, grads, v, s, t, self.alpha, self.beta1, self.beta2,  self.epsilon)
             if self.print_loss and i % self.print_loss_iter == 0:
-                loss = self.compute_cost_with_regularization(self.Y, al, parameters, self.lambd)
-                print(i, loss)
-            grads = self.back_propagation_with_regularization(parameters, caches)
-
-            # Update parameters
-            if self.optimizer == "gd":
-                parameters = op.gd(parameters, grads, self.alpha)
-            elif self.optimizer == "momentum":
-                parameters, v = op.momentum(parameters, grads, v, self.beta1, self.alpha)
-            elif self.optimizer == "adam":
-                t = i + 1  # Adam counter
-                parameters, v, s = op.adam(parameters, grads, v, s, t, self.alpha, self.beta1, self.beta2,  self.epsilon)
-
+                print(i, cost)
         self.parameters = parameters
     # --------------------regularization end-----------------------------------
 
@@ -456,7 +457,7 @@ class DNN:
         caches['Z' + str(self.L)] = Zl
         return caches, Al
 
-    def back_propagation_with_dropout(self, parameters, caches):
+    def back_propagation_with_dropout(self, parameters, caches, Y_batch):
         """
         反向传播dropout
         :param parameters: 各层W，b
@@ -470,7 +471,7 @@ class DNN:
         ZL = caches['Z' + str(L)]
         # 交叉熵损失函数求dl/dAl
         # dAl = - (np.divide(self.Y, np.clip(AL, 1e-7, 1)) - np.divide(1 - self.Y, np.clip(1 - AL, 1e-7, 1)))
-        dAl = - (np.divide(self.Y, AL) - np.divide(1 - self.Y, 1 - AL))
+        dAl = - (np.divide(Y_batch, AL) - np.divide(1 - Y_batch, 1 - AL))
         A_pre = caches['A' + str(L - 1)]
         grads['dA' + str(L-1)], grads['dW' + str(L)], grads['db' + str(L)] = self.linear_activation_backward(dAl, ZL, AL, A_pre, parameters['W' + str(L)], 'sigmoid')
         # 2.计算hidden layer
@@ -492,6 +493,8 @@ class DNN:
         模型训练dropout
         :return: 参数W和b
         """
+        seed = 10
+        t = 0
         parameters = self.init_parameters()
         # Initialize the optimizer
         if self.optimizer == "gd":
@@ -502,23 +505,20 @@ class DNN:
             v, s = op.initialize_adam(parameters)
 
         for i in range(self.epochs):
-            caches, al = self.forward_propagation_with_dropout(parameters, self.X)
+            for X_batch, Y_batch in self.get_batch(seed):
+                caches, al = self.forward_propagation_with_dropout(parameters, X_batch)
+                cost = self.compute_cost(Y_batch, al)
+                grads = self.back_propagation_with_dropout(parameters, caches, Y_batch)
+                # Update parameters
+                if self.optimizer == "gd":
+                    parameters = op.gd(parameters, grads, self.alpha)
+                elif self.optimizer == "momentum":
+                    parameters, v = op.momentum(parameters, grads, v, self.alpha, self.beta1)
+                elif self.optimizer == "adam":
+                    t = i + 1  # Adam counter
+                    parameters, v, s = op.adam(parameters, grads, v, s, t, self.alpha, self.beta1, self.beta2,  self.epsilon)
             if self.print_loss and i % self.print_loss_iter == 0:
-                loss = self.compute_cost(self.Y, al)
-                print(i, loss)
-            if self.print_loss and i == self.epochs-1:
-                loss = self.compute_cost(self.Y, al)
-                print(i, loss)
-            grads = self.back_propagation_with_dropout(parameters, caches)
-            # Update parameters
-            if self.optimizer == "gd":
-                parameters = op.gd(parameters, grads, self.alpha)
-            elif self.optimizer == "momentum":
-                parameters, v = op.momentum(parameters, grads, v, self.beta1, self.alpha)
-            elif self.optimizer == "adam":
-                t = i + 1  # Adam counter
-                parameters, v, s = op.adam(parameters, grads, v, s, t, self.alpha, self.beta1, self.beta2,  self.epsilon)
-
+                print(i, cost)
         self.parameters = parameters
     # --------------------dropout end-----------------------------------
 
