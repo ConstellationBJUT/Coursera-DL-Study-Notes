@@ -10,6 +10,7 @@ import numpy as np
 
 import class2_week2_practice.optimizer_class as op
 
+
 def sigmoid(Z):
     A = 1/(1 + np.exp(-Z))
     return A
@@ -245,11 +246,17 @@ class DNN:
             parameters['b' + str(l)] = parameters['b' + str(l)] - self.alpha * grads['db' + str(l)]
         return parameters
 
-    def get_batch(self):
+    def get_batch(self, seed):
         """
         分割数据集到各个batch
         :return:
         """
+        np.random.seed(seed)            # To make your "random" minibatches the same as ours
+        m = self.X.shape[1]
+        permutation = list(np.random.permutation(m))
+        shuffled_X = self.X[:, permutation]
+        shuffled_Y = self.Y[:, permutation].reshape((1, m))
+
         batch_list = []
         batch_num = int(self.m/self.batch_size) + 1
         for k in range(batch_num):
@@ -262,8 +269,8 @@ class DNN:
             if end >= self.m:
                 # 块结束超过数据集最大值，结束值设置为m
                 end = self.m
-            X_batch = self.X[:, start:end]
-            Y_batch = self.Y[:, start:end]
+            X_batch = shuffled_X[:, start:end]
+            Y_batch = shuffled_Y[:, start:end]
             batch_list.append((X_batch, Y_batch))
         return batch_list
 
@@ -272,6 +279,8 @@ class DNN:
         模型训练
         :return: 参数W和b
         """
+        seed = 10
+        t = 0
         parameters = self.init_parameters()
         # Initialize the optimizer
         if self.optimizer == "gd":
@@ -281,9 +290,11 @@ class DNN:
         elif self.optimizer == "adam":
             v, s = op.initialize_adam(parameters)
 
+
         for i in range(self.epochs):
             # 每个batch进行梯度下降
-            for X_batch, Y_batch in self.get_batch():
+            seed += 1
+            for X_batch, Y_batch in self.get_batch(seed):
                 caches, al = self.forward_propagation(parameters, X_batch)
                 cost = self.compute_cost(Y_batch, al)
                 grads = self.back_propagation(parameters, caches, Y_batch)
@@ -292,10 +303,10 @@ class DNN:
                 if self.optimizer == "gd":
                     parameters = op.gd(parameters, grads, self.alpha)
                 elif self.optimizer == "momentum":
-                    parameters, v = op.momentum(parameters, grads, v, self.beta1, self.alpha)
+                    parameters, v = op.momentum(parameters, grads, v, self.alpha, self.beta1)
                 elif self.optimizer == "adam":
-                    t = i + 1  # Adam counter
-                    parameters, v, s = op.adam(parameters, grads, v, s, t, self.alpha, self.beta1, self.beta2,  self.epsilon)
+                    t = t + 1  # Adam counter
+                    parameters, v, s = op.adam(parameters, grads, v, s, t, self.alpha, self.beta1, self.beta2, self.epsilon)
 
             if self.print_loss and i % self.print_loss_iter == 0:
                 print(i, cost)
