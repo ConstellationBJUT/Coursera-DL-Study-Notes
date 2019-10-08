@@ -5,7 +5,7 @@
 """
 import numpy as np
 
-from class2_week1_practice.dnn import DNN
+from class2_week1_practice.dnn_v3 import DNN
 
 # 一个参数theta梯度检测,y = theta*x
 def forward_propagation(x, theta):

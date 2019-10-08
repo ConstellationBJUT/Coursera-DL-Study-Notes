@@ -8,7 +8,7 @@ import sklearn
 import sklearn.datasets
 import matplotlib.pyplot as plt
 
-from class2_week1_practice.dnn import DNN
+from class2_week1_practice.dnn_v3 import DNN
 from utils import plot_decision_boundary
 
 
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     layer_dims = [train_X.shape[0], 10, 5, 1]
     dnn = DNN(X=train_X, Y=train_Y, layer_dims=layer_dims, max_iter=15000, alpha=0.01,
-              print_loss=True, print_loss_iter=1000, lambd=0.7, keep_prob=0.86, initialization="random")
+              print_loss=True, print_loss_iter=1000, lambd=0.7, keep_prob=0.86, initialization="he")
     dnn.fit()
     # dnn.fit_regularization()
     # dnn.fit_dropout()

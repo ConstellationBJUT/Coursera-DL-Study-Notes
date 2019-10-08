@@ -1,7 +1,9 @@
 """
 @Time : 2019/10/2 20:19 PM
 @Author : bjjoy2009
-深层神经网络，用于创建和训练网络
+深层神经网络v3:
+(1)添加正则化（L2和dropout）
+(2)添加权重初始化(zeros, random, he)
 """
 
 import numpy as np
