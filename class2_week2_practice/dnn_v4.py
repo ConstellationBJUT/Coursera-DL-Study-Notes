@@ -251,6 +251,7 @@ class DNN:
         分割数据集到各个batch
         :return:
         """
+        # 下面随机排列数据，是为了和课件保持一致
         np.random.seed(seed)            # To make your "random" minibatches the same as ours
         m = self.X.shape[1]
         permutation = list(np.random.permutation(m))
@@ -392,7 +393,7 @@ class DNN:
     def fit_regularization(self):
         """
         模型训练
-        :return: 参数W和b
+        :return:
         """
         seed = 10
         t = 0
@@ -515,7 +516,7 @@ class DNN:
                 elif self.optimizer == "momentum":
                     parameters, v = op.momentum(parameters, grads, v, self.alpha, self.beta1)
                 elif self.optimizer == "adam":
-                    t = i + 1  # Adam counter
+                    t = t + 1  # Adam counter
                     parameters, v, s = op.adam(parameters, grads, v, s, t, self.alpha, self.beta1, self.beta2,  self.epsilon)
             if self.print_loss and i % self.print_loss_iter == 0:
                 print(i, cost)
