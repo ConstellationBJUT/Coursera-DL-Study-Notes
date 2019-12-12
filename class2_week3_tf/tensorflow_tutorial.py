@@ -105,11 +105,16 @@ def load_dataset():
 
 
 def convert_to_one_hot(Y, C):
+    """
+    :param Y: labels
+    :param C: 类别数
+    :return:
+    """
     Y = np.eye(C)[Y.reshape(-1)].T
     return Y
 
 
-def random_mini_batches(X, Y, mini_batch_size = 64, seed = 0):
+def random_mini_batches(X, Y, mini_batch_size=64, seed=0):
     """
     Creates a list of random minibatches from (X, Y)
 
@@ -256,6 +261,7 @@ if __name__ == '__main__':
     # index = 0
     # plt.imshow(X_train_orig[index])
     # print("y = " + str(np.squeeze(Y_train_orig[:, index])))
+
     X_train_flatten = X_train_orig.reshape(X_train_orig.shape[0], -1).T
     X_test_flatten = X_test_orig.reshape(X_test_orig.shape[0], -1).T
     X_train = X_train_flatten/255
