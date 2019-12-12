@@ -10,7 +10,7 @@ from class5_week1_rnn.rnn import RNN, get_initial_loss, smooth, softmax
 def sample(parameters, char_to_ix, seed):
     """
     Sample a sequence of characters according to a sequence of probability distributions output of the RNN
-
+    生成名称字符串，每生成一个字符作为下一个cell的输入，直到字符是\n或者长度到50结束
     Arguments:
     parameters -- python dictionary containing the parameters Waa, Wax, Wya, by, and b.
     char_to_ix -- python dictionary mapping each character to an index.
@@ -124,16 +124,19 @@ def model(data, ix_to_char, char_to_ix, n_a=50, iter_num=35000, dino_names=7, vo
 
         # Use the hint above to define one training example (X,Y) (≈ 2 lines)
         index = j % len(examples)
-        x = [None] + [char_to_ix[ch] for ch in examples[index]]
-        y = x[1:] + [char_to_ix["\n"]]
-        X_batch = np.zeros((n_x, 1, len(x)))
-        Y_batch = np.zeros((n_y, 1, len(x)))
+        x = [None] + [char_to_ix[ch] for ch in examples[index]]  # 输入的名字example是名字list
+        y = x[1:] + [char_to_ix["\n"]]  # 对应的输出名字，x左移一位后补\n
+        X_batch = np.zeros((n_x, 1, len(x)))  # x转为输入矩阵
+        Y_batch = np.zeros((n_y, 1, len(x)))  # y转为label
+        # 字符对应位置补1
         for t in range(len(x)):
             if x[t] is not None:
                 X_batch[x[t], 0, t] = 1
             Y_batch[y[t], 0, t] = 1
 
+        # 每个序列输入初始化loss=0
         rnn.loss = 0
+        # 送入rnn训练
         curr_loss, gradients, a_prev = rnn.optimize(X=X_batch, Y=Y_batch, a_prev=a_prev)
 
         # Use a latency trick to keep the loss smooth. It happens here to accelerate the training.

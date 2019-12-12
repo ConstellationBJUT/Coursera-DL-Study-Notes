@@ -60,7 +60,6 @@ class RNN:
         """
         :param epochs: 迭代次数
         :param n_a: 隐藏层节点数
-        :param n_y: 输出类别数
         :param alpha: 梯度下降参数
         :param batch_size: 每个batch大小
         """
@@ -140,11 +139,11 @@ class RNN:
         x -- Input data for every time-step, of shape (n_x, m, T_x).
         a_prev -- Initial hidden state, of shape (n_a, m)
         parameters -- python dictionary containing:
-                            Waa -- Weight matrix multiplying the hidden state, numpy array of shape (n_a, n_a)
-                            Wax -- Weight matrix multiplying the input, numpy array of shape (n_a, n_x)
-                            Wya -- Weight matrix relating the hidden-state to the output, numpy array of shape (n_y, n_a)
-                            ba --  Bias numpy array of shape (n_a, 1)
-                            by -- Bias relating the hidden-state to the output, numpy array of shape (n_y, 1)
+            Waa -- Weight matrix multiplying the hidden state, numpy array of shape (n_a, n_a)
+            Wax -- Weight matrix multiplying the input, numpy array of shape (n_a, n_x)
+            Wya -- Weight matrix relating the hidden-state to the output, numpy array of shape (n_y, n_a)
+            ba --  Bias numpy array of shape (n_a, 1)
+            by -- Bias relating the hidden-state to the output, numpy array of shape (n_y, 1)
 
         Returns:
         a -- Hidden states for every time-step, numpy array of shape (n_a, m, T_x)
