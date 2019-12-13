@@ -4,7 +4,7 @@
 rnn实现生成恐龙名字，batch_size需要设置为1，不同长度名字，T_x不同
 """
 import numpy as np
-from class5_week1_rnn.rnn import RNN, get_initial_loss, smooth, softmax
+from class5_week1_sequence.rnn.rnn import RNN, get_initial_loss, smooth, softmax
 
 
 def sample(parameters, char_to_ix, seed):
@@ -108,7 +108,7 @@ def model(data, ix_to_char, char_to_ix, n_a=50, iter_num=35000, dino_names=7, vo
     loss = get_initial_loss(vocab_size, dino_names)
 
     # Build list of all dinosaur names (training examples).
-    with open("dinos.txt") as f:
+    with open("../dinos.txt") as f:
         examples = f.readlines()
     examples = [x.lower().strip() for x in examples]
 
@@ -162,7 +162,7 @@ def model(data, ix_to_char, char_to_ix, n_a=50, iter_num=35000, dino_names=7, vo
     return parameters
 
 
-data = open('dinos.txt', 'r').read()
+data = open('../dinos.txt', 'r').read()
 data = data.lower()
 chars = list(set(data))
 data_size, vocab_size = len(data), len(chars)

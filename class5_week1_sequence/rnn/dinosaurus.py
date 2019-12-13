@@ -4,12 +4,10 @@
 课程作业完整copy
 """
 
-import numpy as np
-from class5_week1_rnn.utils import *
-import random
+from class5_week1_sequence.rnn.utils import *
 
-data = open('dinos.txt', 'r').read()
-data= data.lower()
+data = open('../dinos.txt', 'r').read()
+data = data.lower()
 chars = list(set(data))
 data_size, vocab_size = len(data), len(chars)
 
@@ -31,11 +29,9 @@ def clip(gradients, maxValue):
 
     dWaa, dWax, dWya, db, dby = gradients['dWaa'], gradients['dWax'], gradients['dWya'], gradients['db'], gradients['dby']
 
-    ### START CODE HERE ###
     # clip to mitigate exploding gradients, loop over [dWax, dWaa, dWya, db, dby]. (≈2 lines)
     for gradient in [dWax, dWaa, dWya, db, dby]:
         np.clip(gradient, -1*maxValue, maxValue, out=gradient)
-    ### END CODE HERE ###
 
     gradients = {"dWaa": dWaa, "dWax": dWax, "dWya": dWya, "db": db, "dby": dby}
 
@@ -60,7 +56,6 @@ def sample(parameters, char_to_ix, seed):
     vocab_size = by.shape[0]
     n_a = Waa.shape[1]
 
-    ### START CODE HERE ###
     # Step 1: Create the one-hot vector x for the first character (initializing the sequence generation). (≈1 line)
     x = np.zeros((vocab_size, 1))
     # Step 1': Initialize a_prev as zeros (≈1 line)
@@ -103,9 +98,7 @@ def sample(parameters, char_to_ix, seed):
 
         # for grading purposes
         seed += 1
-        counter +=1
-
-    ### END CODE HERE ###
+        counter += 1
 
     if counter == 50:
         indices.append(char_to_ix['\n'])
@@ -182,7 +175,7 @@ def model(data, ix_to_char, char_to_ix, num_iterations = 35000, n_a = 50, dino_n
     loss = get_initial_loss(vocab_size, dino_names)
 
     # Build list of all dinosaur names (training examples).
-    with open("dinos.txt") as f:
+    with open("../dinos.txt") as f:
         examples = f.readlines()
     examples = [x.lower().strip() for x in examples]
 
@@ -226,5 +219,6 @@ def model(data, ix_to_char, char_to_ix, num_iterations = 35000, n_a = 50, dino_n
             print('\n')
 
     return parameters
+
 
 parameters = model(data, ix_to_char, char_to_ix)
