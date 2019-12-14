@@ -1,10 +1,11 @@
 """
 @Time : 2019/12/11 4:40 PM 
 @Author : bjjoy2009
-rnn实现生成恐龙名字，batch_size需要设置为1，不同长度名字，T_x不同
+lstm实现生成恐龙名字，batch_size需要设置为1，不同长度名字，T_x不同
 """
 import numpy as np
-from class5_week1_sequence.lstm.lstm import LSTM, softmax
+from class5_week1_sequence.lstm.lstm import LSTM
+
 
 def get_initial_loss(vocab_size, seq_length):
     """
