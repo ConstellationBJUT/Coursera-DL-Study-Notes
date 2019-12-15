@@ -271,8 +271,8 @@ class LSTM:
         Implement the backward pass for the RNN with LSTM-cell (over a whole sequence).
 
         Arguments:
-        da -- Gradients w.r.t the hidden states, numpy-array of shape (n_a, m, T_x)
-        dc -- Gradients w.r.t the memory states, numpy-array of shape (n_a, m, T_x)
+        :param y: one_hot label, shape (n_y, m, T_x)
+        :param y_hat: lstm_forward 计算结果, shape (n_y, m, T_x)
         caches -- cache storing information from the forward pass (lstm_forward)
 
         Returns:
@@ -287,11 +287,12 @@ class LSTM:
                 dbi -- Gradient w.r.t. biases of the update gate, of shape (n_a, 1)
                 dbc -- Gradient w.r.t. biases of the memory gate, of shape (n_a, 1)
                 dbo -- Gradient w.r.t. biases of the save gate, of shape (n_a, 1)
+                dWy -- Gradient w.r.t. the weight matrix of output, numpy array of shape (n_y, n_a)
+                dby -- Gradient w.r.t. biases of output, numpy array of shape (n_y, 1)
         """
 
         # Retrieve values from the first cache (t=1) of caches.
         (caches, x) = caches
-        (a1, c1, a0, c0, f1, i1, cc1, o1, x1) = caches[0]
 
         # Retrieve dimensions from da's and x1's shapes (≈2 lines)
         n_x, m, T_x = x.shape
