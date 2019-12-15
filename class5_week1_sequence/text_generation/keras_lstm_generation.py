@@ -47,24 +47,28 @@ def sample(preds, temperature=1.0):
 
 def generate_output(text_len=10):
     """
+    生成文本
     :param text_len: 生成的text文本长度
     :return:
     """
-    # Function invoked at end of each epoch. Prints generated text.
-    start_index = random.randint(0, len(text) - maxlen - 1)
     diversity = 1.0
+    generated = ''  # 最终生成的文本
+    # 从文本中随机选取位置截取maxlen字符作为初始输入句子
+    start_index = random.randint(0, len(text) - maxlen - 1)
 
-    generated = ''
     sentence = text[start_index: start_index + maxlen]
 
     for i in range(text_len):
+        # 输入句子x_pred
         x_pred = np.zeros((1, maxlen, len(chars)))
+        # 生成one_hot向量
         for t, char in enumerate(sentence):
             x_pred[0, t, char_indices[char]] = 1.
-
+        # 预测输出
         preds = model.predict(x_pred, verbose=0)[0]
         next_index = sample(preds, diversity)
         next_char = indices_char[next_index]
+        # 将句子字符串左移一位，新字符加载句子末尾，作为新的输入
         sentence = sentence[1:] + next_char
         generated += next_char
     return generated
